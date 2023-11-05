@@ -5,8 +5,14 @@ const app = express()
 const port = process.env.PORT || 5000
 
 //middleware
-app.use(cors())
-app.search(express.json())
+app.use(cors({
+    origin: [
+        "http://localhost:5173",
+        "http://localhost:5174"
+    ],
+    credentials: true
+}))
+app.use(express.json())
 
 
 
@@ -26,12 +32,20 @@ async function run() {
   try {
     // Connect the client to the server	(optional starting in v4.7)
     await client.connect();
+    const foodCollection = client.db("foodDB").collection("food");
+    //food related api
+    app.post('/foods', async(req, res)=> {
+        console.log('clicked');
+        const food = req.body
+        const result = await foodCollection.insertOne(food)
+        res.send(result);
+    })
     // Send a ping to confirm a successful connection
     await client.db("admin").command({ ping: 1 });
     console.log("Pinged your deployment. You successfully connected to MongoDB!");
   } finally {
     // Ensures that the client will close when you finish/error
-    await client.close();
+    // await client.close();
   }
 }
 run().catch(console.dir);
