@@ -31,6 +31,11 @@ async function run() {
     await client.connect();
     const foodCollection = client.db("foodDB").collection("food");
     //food related api
+    app.get('/foods',async(req, res)=> {
+      const result = await foodCollection.find().toArray();
+      res.send(result)
+    })
+
     app.get("/feature-foods", async (req, res) => {
       const result = await foodCollection
         .find()
@@ -50,7 +55,6 @@ async function run() {
 
     app.post("/foods", async (req, res) => {
       try {
-        console.log("clicked");
         const food = req.body;
         const result = await foodCollection.insertOne(food);
         res.send(result);
@@ -76,5 +80,5 @@ app.get("/", (req, res) => {
 });
 
 app.listen(port, () => {
-  console.log(`foodies server is running on poet ${port}`);
+  console.log(`foodies server is running on port ${port}`);
 });
