@@ -13,7 +13,7 @@ app.use(
 );
 app.use(express.json());
 
-const { MongoClient, ServerApiVersion } = require("mongodb");
+const { MongoClient, ServerApiVersion, ObjectId } = require("mongodb");
 const uri = `mongodb+srv://${process.env.NAME}:${process.env.PASS}@cluster0.ib5iccz.mongodb.net/?retryWrites=true&w=majority`;
 
 // Create a MongoClient with a MongoClientOptions object to set the Stable API version
@@ -31,26 +31,33 @@ async function run() {
     await client.connect();
     const foodCollection = client.db("foodDB").collection("food");
     //food related api
-    app.get('/feature-foods', async(req,res) => {
-      const result = await foodCollection.find().sort({quantity: -1 }).skip(0)
-      .limit(6).toArray()
-      res.send(result)
+    app.get("/feature-foods", async (req, res) => {
+      const result = await foodCollection
+        .find()
+        .sort({ quantity: -1 })
+        .skip(0)
+        .limit(6)
+        .toArray();
+      res.send(result);
+    });
+
+    app.get('/foods/:id', async (req, res) => {
+      const id = req.params
+      const cursor = { _id : new ObjectId(id)}
+      const result = await foodCollection.findOne(cursor)
+      res.send(result);
     })
 
-    
     app.post("/foods", async (req, res) => {
-      try{
-
+      try {
         console.log("clicked");
         const food = req.body;
         const result = await foodCollection.insertOne(food);
         res.send(result);
-      }
-      catch(err){
+      } catch (err) {
         console.log(err.massage);
       }
     });
-
 
     // Send a ping to confirm a successful connection
     await client.db("admin").command({ ping: 1 });
