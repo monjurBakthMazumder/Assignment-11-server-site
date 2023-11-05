@@ -97,7 +97,13 @@ async function run() {
     });
 
     // request food related api
-    app.post('/request-food', async (req, res) =>{
+    app.get("/request-foods", async (req, res) => {
+      const email = req.query.email;
+      const cursor = { userEmail: email };
+      const result = await requestFoodCollection.find(cursor).toArray();
+      res.send(result);
+    });
+    app.post('/request-foods', async (req, res) =>{
       const food = req.body
       const result = await requestFoodCollection.insertOne(food);
       res.send(result);
