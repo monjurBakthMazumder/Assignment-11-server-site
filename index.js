@@ -31,16 +31,16 @@ async function run() {
     await client.connect();
     const foodCollection = client.db("foodDB").collection("food");
     //food related api
-    app.get('/foods',async(req, res)=> {
+    app.get("/foods", async (req, res) => {
       const result = await foodCollection.find().toArray();
-      res.send(result)
-    })
-    app.get('/manage-foods',async(req, res)=> {
-      const email = req.query.email
-      const cursor = {donatorEmail : email}
+      res.send(result);
+    });
+    app.get("/manage-foods", async (req, res) => {
+      const email = req.query.email;
+      const cursor = { donatorEmail: email };
       const result = await foodCollection.find(cursor).toArray();
-      res.send(result)
-    })
+      res.send(result);
+    });
 
     app.get("/feature-foods", async (req, res) => {
       const result = await foodCollection
@@ -52,13 +52,12 @@ async function run() {
       res.send(result);
     });
 
-    app.get('/foods/:id', async (req, res) => {
-      const id = req.params
-      const cursor = { _id : new ObjectId(id)}
-      const result = await foodCollection.findOne(cursor)
+    app.get("/foods/:id", async (req, res) => {
+      const id = req.params;
+      const cursor = { _id: new ObjectId(id) };
+      const result = await foodCollection.findOne(cursor);
       res.send(result);
-    })
-
+    });
 
     app.post("/foods", async (req, res) => {
       try {
@@ -70,12 +69,31 @@ async function run() {
       }
     });
 
-    app.delete("/foods/:id",async (req, res)=> {
-      const id = req.params
-      const cursor = { _id : new ObjectId(id)}
-      const result = await foodCollection.deleteOne(cursor)
+    app.put("/foods/:id", async (req, res) => {
+      const food = req.body;
+      const id = req.params;
+      const filter = { _id: new ObjectId(id) };
+      const options = { upsert: true };
+      const updateFood = {
+        $set: {
+          foodName : food.foodName,
+          foodImg : food.foodImg,
+          quantity : food.quantity,
+          pickupLocation : food.pickupLocation,
+          expiredDate : food.expiredDate,
+          additionalInformation : food.additionalInformation,
+        },
+      };
+      const result = await foodCollection.updateOne(filter, updateFood, options);
       res.send(result);
-    })
+    });
+
+    app.delete("/foods/:id", async (req, res) => {
+      const id = req.params;
+      const cursor = { _id: new ObjectId(id) };
+      const result = await foodCollection.deleteOne(cursor);
+      res.send(result);
+    });
 
     // Send a ping to confirm a successful connection
     await client.db("admin").command({ ping: 1 });
