@@ -30,6 +30,7 @@ async function run() {
     // Connect the client to the server	(optional starting in v4.7)
     await client.connect();
     const foodCollection = client.db("foodDB").collection("food");
+    const requestFoodCollection = client.db("foodDB").collection("requestFood");
     //food related api
     app.get("/foods", async (req, res) => {
       const result = await foodCollection.find().toArray();
@@ -94,6 +95,13 @@ async function run() {
       const result = await foodCollection.deleteOne(cursor);
       res.send(result);
     });
+
+    // request food related api
+    app.post('/request-food', async (req, res) =>{
+      const food = req.body
+      const result = await requestFoodCollection.insertOne(food);
+      res.send(result);
+    })
 
     // Send a ping to confirm a successful connection
     await client.db("admin").command({ ping: 1 });
