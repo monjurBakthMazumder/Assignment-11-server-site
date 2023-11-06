@@ -77,7 +77,9 @@ async function run() {
     //food related api
     app.get("/foods",   async (req, res) => {
       const search = req.query.search;
-      const filter = { foodName: search };
+      // const filter = { foodName: search };
+      const filter = { foodName: { $regex: new RegExp(search, "i") }
+    }
       if (search) {
         const result = await foodCollection.find(filter).toArray();
         res.send(result);
