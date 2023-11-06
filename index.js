@@ -28,6 +28,22 @@ const client = new MongoClient(uri, {
   },
 });
 
+//  verify token 
+const verifyToken = (req, res, next) => {
+  const token = req?.cookies?.token;
+  if(!token) {
+    return res.status(401).send({ message: "unauthorized" });
+  }
+  jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, (err, decoded) => {
+    if(err){
+      return res.status(401).send({ message: "unauthorized"})
+    }
+    req.user = decoded
+    next()
+  })
+}
+
+
 async function run() {
   try {
     // Connect the client to the server	(optional starting in v4.7)
@@ -55,7 +71,7 @@ async function run() {
     })
 
     //food related api
-    app.get("/foods", async (req, res) => {
+    app.get("/foods",   async (req, res) => {
       const search = req.query.search;
       const filter = { foodName: search };
       if (search) {
@@ -66,7 +82,10 @@ async function run() {
         res.send(result);
       }
     });
-    app.get("/manage-foods", async (req, res) => {
+    app.get("/manage-foods", verifyToken, async (req, res) => {
+      if(req?.query?.email !== req?.user?.email){
+        return res.status(403).send({message : "forbidden"})
+      }
       const email = req.query.email;
       const cursor = { donatorEmail: email };
       const result = await foodCollection.find(cursor).toArray();
@@ -90,7 +109,7 @@ async function run() {
       res.send(result);
     });
 
-    app.post("/foods", async (req, res) => {
+    app.post("/foods", verifyToken, async (req, res) => {
       try {
         const food = req.body;
         const result = await foodCollection.insertOne(food);
@@ -100,7 +119,7 @@ async function run() {
       }
     });
 
-    app.put("/foods/:id", async (req, res) => {
+    app.put("/foods/:id", verifyToken, async (req, res) => {
       const food = req.body;
       const id = req.params;
       const filter = { _id: new ObjectId(id) };
@@ -123,7 +142,7 @@ async function run() {
       res.send(result);
     });
 
-    app.delete("/foods/:id", async (req, res) => {
+    app.delete("/foods/:id",verifyToken, async (req, res) => {
       const id = req.params;
       const cursor = { _id: new ObjectId(id) };
       const result = await foodCollection.deleteOne(cursor);
@@ -131,24 +150,27 @@ async function run() {
     });
 
     // request food related api
-    app.get("/request-foods", async (req, res) => {
+    app.get("/request-foods", verifyToken, async (req, res) => {
+      if(req?.query?.email !== req?.user?.email){
+        return res.status(403).send({message : "forbidden"})
+      }
       const email = req.query.email;
       const cursor = { requesterEmail: email };
       const result = await requestFoodCollection.find(cursor).toArray();
       res.send(result);
     });
-    app.get("/manage-single-foods-request/:id", async (req, res) => {
+    app.get("/manage-single-foods-request/:id", verifyToken, async (req, res) => {
       const id = req?.params?.id;
       const cursor = { foodId: id };
       const result = await requestFoodCollection.find(cursor).toArray();
       res.send(result);
     });
-    app.post("/request-foods", async (req, res) => {
+    app.post("/request-foods", verifyToken, async (req, res) => {
       const food = req.body;
       const result = await requestFoodCollection.insertOne(food);
       res.send(result);
     });
-    app.put("/request/:id", async (req, res) => {
+    app.put("/request/:id", verifyToken, async (req, res) => {
       const food = req.body;
       const id = req.params;
       const filter = { _id: new ObjectId(id) };
@@ -165,7 +187,7 @@ async function run() {
       );
       res.send(result);
     });
-    app.delete("/request/:id", async (req, res) => {
+    app.delete("/request/:id", verifyToken, async (req, res) => {
       const id = req.params;
       const cursor = { _id: new ObjectId(id) };
       const result = await requestFoodCollection.deleteOne(cursor);
