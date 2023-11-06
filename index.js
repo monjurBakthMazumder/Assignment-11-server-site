@@ -33,8 +33,15 @@ async function run() {
     const requestFoodCollection = client.db("foodDB").collection("requestFood");
     //food related api
     app.get("/foods", async (req, res) => {
-      const result = await foodCollection.find().toArray();
-      res.send(result);
+      const search = req.query.search;
+      const filter = { foodName: search };
+      if (search) {
+        const result = await foodCollection.find(filter).toArray();
+        res.send(result);
+      } else {
+        const result = await foodCollection.find().toArray();
+        res.send(result);
+      }
     });
     app.get("/manage-foods", async (req, res) => {
       const email = req.query.email;
@@ -77,15 +84,19 @@ async function run() {
       const options = { upsert: true };
       const updateFood = {
         $set: {
-          foodName : food.foodName,
-          foodImg : food.foodImg,
-          quantity : food.quantity,
-          pickupLocation : food.pickupLocation,
-          expiredDate : food.expiredDate,
-          additionalInformation : food.additionalInformation,
+          foodName: food.foodName,
+          foodImg: food.foodImg,
+          quantity: food.quantity,
+          pickupLocation: food.pickupLocation,
+          expiredDate: food.expiredDate,
+          additionalInformation: food.additionalInformation,
         },
       };
-      const result = await foodCollection.updateOne(filter, updateFood, options);
+      const result = await foodCollection.updateOne(
+        filter,
+        updateFood,
+        options
+      );
       res.send(result);
     });
 
@@ -109,22 +120,26 @@ async function run() {
       const result = await requestFoodCollection.find(cursor).toArray();
       res.send(result);
     });
-    app.post('/request-foods', async (req, res) =>{
-      const food = req.body
+    app.post("/request-foods", async (req, res) => {
+      const food = req.body;
       const result = await requestFoodCollection.insertOne(food);
       res.send(result);
-    })
+    });
     app.put("/request/:id", async (req, res) => {
-      const food = req.body
+      const food = req.body;
       const id = req.params;
       const filter = { _id: new ObjectId(id) };
       const options = { upsert: true };
       const updateDoc = {
         $set: {
-          status: food.status
+          status: food.status,
         },
       };
-      const result = await requestFoodCollection.updateOne(filter, updateDoc, options);
+      const result = await requestFoodCollection.updateOne(
+        filter,
+        updateDoc,
+        options
+      );
       res.send(result);
     });
     app.delete("/request/:id", async (req, res) => {
