@@ -86,6 +86,10 @@ async function run() {
         res.send(result);
       }
     });
+    app.get("/short-foods", async (req, res) => {
+      const result = await foodCollection.find().sort({expiredDate: 1}).toArray()
+      res.send(result);
+    })
     app.get("/manage-foods", verifyToken, async (req, res) => {
       if(req?.query?.email !== req?.user?.email){
         return res.status(403).send({message : "forbidden"})
