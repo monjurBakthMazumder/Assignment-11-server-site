@@ -69,10 +69,10 @@ async function run() {
       }).send({success : true})
     })
 
-    app.post('/logout', async (req, res) => {
-      const user = req = req
-      res.clearCookie("token", {maxAge: 0}).send({success : true})
-    })
+    app.post("/logout", async (req, res) => {
+      const user = req.body;
+      res.clearCookie("token", { maxAge: 0 }).send({ success: true });
+    });
 
     //food related api
     app.get("/foods",   async (req, res) => {
