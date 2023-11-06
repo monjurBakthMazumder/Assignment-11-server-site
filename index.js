@@ -99,7 +99,13 @@ async function run() {
     // request food related api
     app.get("/request-foods", async (req, res) => {
       const email = req.query.email;
-      const cursor = { userEmail: email };
+      const cursor = { requesterEmail: email };
+      const result = await requestFoodCollection.find(cursor).toArray();
+      res.send(result);
+    });
+    app.get("/manage-single-foods-request/:id", async (req, res) => {
+      const id = req?.params?.id;
+      const cursor = { foodId: id };
       const result = await requestFoodCollection.find(cursor).toArray();
       res.send(result);
     });
@@ -108,6 +114,25 @@ async function run() {
       const result = await requestFoodCollection.insertOne(food);
       res.send(result);
     })
+    app.put("/request/:id", async (req, res) => {
+      const food = req.body
+      const id = req.params;
+      const filter = { _id: new ObjectId(id) };
+      const options = { upsert: true };
+      const updateDoc = {
+        $set: {
+          status: food.status
+        },
+      };
+      const result = await requestFoodCollection.updateOne(filter, updateDoc, options);
+      res.send(result);
+    });
+    app.delete("/request/:id", async (req, res) => {
+      const id = req.params;
+      const cursor = { _id: new ObjectId(id) };
+      const result = await requestFoodCollection.deleteOne(cursor);
+      res.send(result);
+    });
 
     // Send a ping to confirm a successful connection
     await client.db("admin").command({ ping: 1 });
