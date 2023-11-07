@@ -71,7 +71,8 @@ async function run() {
 
     app.post("/logout", async (req, res) => {
       const user = req.body;
-      res.clearCookie("token", { maxAge: 0 }).send({ success: true });
+      console.log(user);
+      res.clearCookie("token", { maxAge: 0, secure: true, sameSite: 'none' }).send({ success: true });
     });
 
     //food related api
